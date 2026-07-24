@@ -1,0 +1,153 @@
+import type { IntegrationDefinition } from './types'
+
+const sales = (
+    id: string,
+    name: string,
+    auth: IntegrationDefinition['auth'],
+    cost: IntegrationDefinition['cost'],
+    available: boolean,
+    note: string,
+): IntegrationDefinition => ({
+    id, name, category: 'sales-intelligence', auth, cost, available, note,
+    credentialConfigurable: true,
+    credentialLabel: auth === 'oauth' ? 'Authorized access token' : 'API credential',
+    capabilities: ['Company research', 'Contact discovery', 'Enrichment'],
+})
+
+const ai = (id: string, name: string, note: string): IntegrationDefinition => ({
+    id, name, category: 'ai', auth: 'api-key', cost: 'metered', available: true, note,
+    credentialLabel: 'API key',
+    capabilities: ['Call plans', 'Research synthesis', 'Coaching'],
+})
+
+export const INTEGRATIONS: IntegrationDefinition[] = [
+    {
+        id: 'livekit',
+        name: 'LiveKit',
+        category: 'voice',
+        auth: 'api-key',
+        credentialLabel: '{"url":"wss://…livekit.cloud","apiKey":"…","apiSecret":"…"}',
+        cost: 'metered',
+        capabilities: ['Realtime roleplay', 'Speech recognition', 'Built-in voices', 'Interruptions'],
+        available: true,
+        note: 'Required for voice roleplay. Paste the Project URL, API key, and API secret from one LiveKit Cloud project. Usage is billed by LiveKit.',
+    },
+    {
+        id: 'assemblyai',
+        name: 'AssemblyAI',
+        category: 'voice',
+        auth: 'api-key',
+        credentialLabel: 'AssemblyAI API key',
+        cost: 'metered',
+        capabilities: ['Streaming transcription', 'Partial transcripts', 'Low-latency turn detection'],
+        available: true,
+        note: 'Recommended for the extension’s live call transcription. The dashboard mints a short-lived, single-use browser token so the permanent API key never enters the extension. Streaming usage is billed by AssemblyAI while a session is open.',
+    },
+    {
+        id: 'hubspot',
+        name: 'HubSpot',
+        category: 'crm',
+        auth: 'access-token',
+        credentialLabel: 'Private app access token',
+        cost: 'none',
+        capabilities: ['Website matching', 'Contacts', 'Deals'],
+        available: true,
+        note: 'Read-only pilot. Use a private app token limited to CRM read scopes.',
+    },
+    {
+        id: 'salesforce',
+        name: 'Salesforce',
+        category: 'crm',
+        auth: 'oauth',
+        credentialLabel: '{"instanceUrl":"https://…my.salesforce.com","accessToken":"…"}',
+        cost: 'contract',
+        capabilities: ['Accounts', 'Contacts', 'Opportunities', 'Activities'],
+        available: true,
+        note: 'Live read-only REST adapter. Paste a short-lived instance URL/access-token JSON object; use Account, Contact, and Opportunity read scopes.',
+    },
+    {
+        id: 'pipedrive', name: 'Pipedrive', category: 'crm', auth: 'api-key',
+        credentialLabel: '{"companyDomain":"your-subdomain","apiToken":"…"}', cost: 'contract',
+        capabilities: ['Organizations', 'Website matching'], available: true,
+        note: 'Live read-only organization search. Paste your account subdomain and API token as JSON.',
+    },
+    {
+        id: 'close', name: 'Close', category: 'crm', auth: 'api-key',
+        credentialLabel: 'Close API key', cost: 'contract',
+        capabilities: ['Leads', 'Contacts', 'Opportunities'], available: true,
+        note: 'Live bounded read-only lead scan with exact website-domain verification.',
+    },
+    {
+        id: 'zoho', name: 'Zoho CRM', category: 'crm', auth: 'oauth',
+        credentialLabel: '{"accessToken":"…","apiDomain":"https://www.zohoapis.com"}', cost: 'contract',
+        capabilities: ['Accounts', 'Contacts', 'Deals'], available: true,
+        note: 'Live read-only Zoho CRM v8 adapter. Paste a short-lived OAuth token and approved Zoho API domain as JSON.',
+    },
+    {
+        id: 'dynamics', name: 'Microsoft Dynamics 365', category: 'crm', auth: 'oauth',
+        credentialLabel: '{"baseUrl":"https://…crm.dynamics.com","accessToken":"…"}', cost: 'contract',
+        capabilities: ['Accounts', 'Website matching'], available: true,
+        note: 'Live read-only Dataverse adapter. Paste the environment URL and short-lived OAuth token as JSON.',
+    },
+    {
+        id: 'attio', name: 'Attio', category: 'crm', auth: 'access-token',
+        credentialLabel: 'Attio access token', cost: 'contract',
+        capabilities: ['Companies', 'Exact domain matching'], available: true,
+        note: 'Live read-only Companies record query using an access token limited to record reads.',
+    },
+    sales('apollo', 'Apollo', 'api-key', 'credit', true, 'Live organization enrichment. Runs only when you explicitly request it and may consume 1 credit on a match.'),
+    sales('hunter', 'Hunter', 'api-key', 'credit', true, 'Live domain search. Runs only when you explicitly request it and may consume credits when results are returned.'),
+    {
+        ...sales('zoominfo', 'ZoomInfo', 'enterprise', 'contract', true, 'Live exact-domain Company Search using the current Data API. Search does not consume ZoomInfo credits, but requires licensed API access and counts against request limits. No automatic enrichment or contact reveal.'),
+        credentialLabel: '{"clientId":"…","clientSecret":"…"} or {"accessToken":"…"}',
+    },
+    {
+        ...sales('seamless', 'Seamless.AI', 'api-key', 'credit', true, 'Live exact-domain company search capped at one result. Search consumes at least 1 Universal Credit when results are returned; no company research or contact reveal runs automatically.'),
+        credentialLabel: 'Seamless Public API key',
+    },
+    sales('lusha', 'Lusha', 'api-key', 'credit', true, 'Live V3 company search. Explicit-run and billed per successful search; it does not reveal contact fields automatically.'),
+    {
+        ...sales('snov', 'Snov.io', 'api-key', 'credit', true, 'Live asynchronous domain/company search. Explicit-run and may consume credits.'),
+        credentialLabel: '{"clientId":"…","clientSecret":"…"}',
+    },
+    sales('clearbit', 'Clearbit', 'enterprise', 'unknown', false, 'Legacy standalone access is not offered as a generally available new connector; use an authorized HubSpot/Breeze path.'),
+    sales('rocketreach', 'RocketReach', 'api-key', 'credit', false, 'Requires provider-approved API access and current tenant documentation before an adapter can be enabled.'),
+    sales('linkedin-sales-navigator', 'LinkedIn Sales Navigator', 'oauth', 'contract', false, 'Approved partner or authorized import only. No UI scraping.'),
+    sales('leadiq', 'LeadIQ', 'enterprise', 'contract', false, 'Requires approved API access.'),
+    sales('clay', 'Clay', 'api-key', 'credit', false, 'Clay enrichment is workflow/table-specific; use an authorized webhook or export rather than pretending there is a universal domain lookup API.'),
+    sales('6sense', '6sense', 'enterprise', 'contract', false, 'Requires enterprise API access.'),
+    sales('bombora', 'Bombora', 'enterprise', 'contract', false, 'Requires licensed intent-data access.'),
+    sales('demandbase', 'Demandbase', 'enterprise', 'contract', false, 'Requires tenant API access.'),
+    sales('g2', 'G2', 'enterprise', 'contract', false, 'Requires authorized buyer-intent access.'),
+    {
+        id: 'google-places',
+        name: 'Google Places',
+        category: 'reviews',
+        auth: 'api-key',
+        credentialLabel: 'Google Maps Platform API key',
+        cost: 'metered',
+        capabilities: ['Place matching', 'Rating and review count', 'Up to 5 review samples', 'Local trend analysis'],
+        available: true,
+        note: 'Official Places API (New). Explicit-run only. Google requires billing; field masks limit requested data but do not guarantee a free request.',
+    },
+    {
+        id: 'outscraper',
+        name: 'Outscraper',
+        category: 'reviews',
+        auth: 'api-key',
+        credentialLabel: 'Outscraper API key',
+        cost: 'credit',
+        capabilities: ['Google Maps place matching', 'Up to 20 recent reviews', 'Local trend analysis'],
+        available: true,
+        note: 'Explicit-run Google Maps Reviews request. May consume Outscraper credits, including when no reviews match.',
+    },
+    ai('anthropic', 'Claude', 'Live Anthropic Messages adapter. Runs only after an explicit synthesis action.'),
+    ai('gemini', 'Gemini', 'Live Gemini adapter. Free-tier eligibility depends on your Google account and model.'),
+    ai('openai', 'OpenAI', 'Live Responses API adapter. Runs only after an explicit synthesis action.'),
+    ai('perplexity', 'Perplexity', 'Live Sonar adapter with citations. Runs only after an explicit synthesis action.'),
+    ai('xai', 'Grok', 'Live xAI adapter. Runs only after an explicit synthesis action.'),
+]
+
+export function getIntegration(id: string) {
+    return INTEGRATIONS.find((integration) => integration.id === id)
+}
